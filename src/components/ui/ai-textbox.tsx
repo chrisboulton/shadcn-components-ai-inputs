@@ -1,0 +1,241 @@
+import React, { useState, useEffect, useRef } from 'react';
+import { Sparkles, Loader2, ChevronDown, Undo2 } from 'lucide-react';
+import { cn } from '@/lib/utils';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+
+export interface AITextboxOption {
+  label: string;
+  value: string;
+}
+
+export interface AITextboxProps extends React.InputHTMLAttributes<HTMLInputElement> {
+  onAIClick?: (option?: string) => void | Promise<void> | Promise<string>;
+  aiOptions?: AITextboxOption[];
+}
+
+export const AITextbox = React.forwardRef<HTMLInputElement, AITextboxProps>(
+  ({ className, placeholder, disabled, onAIClick, aiOptions, value, onChange, ...props }, ref) => {
+    const [isActive, setIsActive] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
+    const [rotation, setRotation] = useState(0);
+    const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+    const [showUndo, setShowUndo] = useState(false);
+    const [previousValue, setPreviousValue] = useState<string>('');
+    const animationRef = useRef<number | null>(null);
+    const internalRef = useRef<HTMLInputElement | null>(null);
+
+    const gradientColors = '#BC82F3, #F5B9EA, #8D9FFF, #AA6EEE, #FF6778, #FFBA71, #C686FF, #BC82F3';
+
+    useEffect(() => {
+      if (isActive) {
+        const animate = () => {
+          setRotation(prev => (prev + 2) % 360);
+          animationRef.current = requestAnimationFrame(animate);
+        };
+        animationRef.current = requestAnimationFrame(animate);
+      } else {
+        if (animationRef.current) {
+          cancelAnimationFrame(animationRef.current);
+        }
+        setRotation(0);
+      }
+
+      return () => {
+        if (animationRef.current) {
+          cancelAnimationFrame(animationRef.current);
+        }
+      };
+    }, [isActive]);
+
+    const handleAIClick = async (option?: string) => {
+      if (isLoading || disabled) return;
+
+      // Store the current value before AI modification
+      const currentValue = internalRef.current?.value || '';
+      setPreviousValue(currentValue);
+      setShowUndo(false);
+
+      setIsActive(true);
+      setIsLoading(true);
+      setIsDropdownOpen(false);
+
+      try {
+        let generatedText: string | undefined;
+
+        if (onAIClick) {
+          const result = await onAIClick(option);
+          if (typeof result === 'string') {
+            generatedText = result;
+          }
+        } else {
+          // Demo behavior - remove in production
+          await new Promise(resolve => setTimeout(resolve, 2000));
+          generatedText = "This is my super awesome AI generated text";
+        }
+
+        // Set the generated text to the input if we got a result
+        if (generatedText !== undefined && internalRef.current && onChange) {
+          const syntheticEvent = {
+            target: { value: generatedText },
+            currentTarget: { value: generatedText },
+          } as React.ChangeEvent<HTMLInputElement>;
+
+          internalRef.current.value = generatedText;
+          onChange(syntheticEvent);
+        }
+      } finally {
+        setIsLoading(false);
+        setIsActive(false);
+        setShowUndo(true);
+      }
+    };
+
+    const handleUndo = () => {
+      if (internalRef.current && onChange) {
+        // Create a synthetic event to trigger onChange
+        const syntheticEvent = {
+          target: { value: previousValue },
+          currentTarget: { value: previousValue },
+        } as React.ChangeEvent<HTMLInputElement>;
+
+        internalRef.current.value = previousValue;
+        onChange(syntheticEvent);
+        setShowUndo(false);
+      }
+    };
+
+    const handleRefCallback = (node: HTMLInputElement | null) => {
+      internalRef.current = node;
+      if (typeof ref === 'function') {
+        ref(node);
+      } else if (ref) {
+        ref.current = node;
+      }
+    };
+
+    return (
+      <div
+        className="relative rounded-md overflow-visible"
+        style={{
+          padding: '1px',
+          background: isActive
+            ? `conic-gradient(from ${rotation}deg, ${gradientColors})`
+            : 'transparent',
+          transition: 'padding 0.3s ease, background 0.3s ease',
+          boxShadow: isActive
+            ? `0 0 20px rgba(188, 130, 243, 0.6), 0 0 40px rgba(245, 185, 234, 0.5), 0 0 60px rgba(141, 159, 255, 0.4)`
+            : 'none',
+        }}
+      >
+        {isActive && (
+          <div
+            className="absolute -inset-[12px] rounded-md pointer-events-none opacity-70 blur-3xl -z-10"
+            style={{
+              background: `conic-gradient(from ${rotation}deg, ${gradientColors})`,
+            }}
+          />
+        )}
+
+        <div
+          className={cn(
+            "relative flex h-9 w-full items-center rounded-md bg-background px-3 py-1 shadow-xs transition-[color,box-shadow]",
+            isActive ? "border-none" : "border border-input focus-within:border-ring focus-within:ring-ring/50 focus-within:ring-[3px]",
+            disabled && "opacity-50 cursor-not-allowed pointer-events-none"
+          )}
+        >
+          <input
+            ref={handleRefCallback}
+            type="text"
+            placeholder={placeholder}
+            disabled={disabled}
+            value={value}
+            onChange={onChange}
+            className={cn(
+              "flex-1 bg-transparent text-base md:text-sm outline-none border-none placeholder:text-muted-foreground",
+              className
+            )}
+            {...props}
+          />
+
+          {showUndo && !disabled && (
+            <button
+              type="button"
+              onClick={handleUndo}
+              className="flex items-center justify-center w-8 h-8 -mr-2 rounded-md flex-shrink-0 transition-all duration-200 hover:bg-accent text-gray-500 hover:text-gray-700"
+              title="Undo AI changes"
+            >
+              <Undo2 className="w-4 h-4" />
+            </button>
+          )}
+
+          {aiOptions && aiOptions.length > 0 ? (
+            <DropdownMenu open={isDropdownOpen} onOpenChange={setIsDropdownOpen}>
+              <DropdownMenuTrigger asChild>
+                <button
+                  type="button"
+                  disabled={isLoading || disabled}
+                  className={`
+                    flex items-center justify-center gap-0.5 h-8 px-2 -mr-2 rounded-md flex-shrink-0
+                    transition-all duration-200
+                    ${isActive
+                      ? 'bg-purple-100 text-purple-600'
+                      : 'hover:bg-accent text-gray-500 hover:text-gray-700'
+                    }
+                    ${isLoading || disabled ? 'cursor-not-allowed' : 'cursor-pointer'}
+                  `}
+                >
+                  {isLoading ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <>
+                      <Sparkles className="w-4 h-4" />
+                      <ChevronDown className="w-3 h-3" />
+                    </>
+                  )}
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                {aiOptions.map((option) => (
+                  <DropdownMenuItem
+                    key={option.value}
+                    onClick={() => handleAIClick(option.value)}
+                  >
+                    {option.label}
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          ) : (
+            <button
+              type="button"
+              onClick={() => handleAIClick()}
+              disabled={isLoading || disabled}
+              className={`
+                flex items-center justify-center w-8 h-8 -mr-2 rounded-md flex-shrink-0
+                transition-all duration-200
+                ${isActive
+                  ? 'bg-purple-100 text-purple-600'
+                : 'hover:bg-accent text-gray-500 hover:text-gray-700'
+                }
+                ${isLoading || disabled ? 'cursor-not-allowed' : 'cursor-pointer'}
+              `}
+            >
+              {isLoading ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <Sparkles className="w-4 h-4" />
+              )}
+            </button>
+          )}
+        </div>
+      </div>
+    );
+  }
+);
+
+AITextbox.displayName = 'AITextbox';
