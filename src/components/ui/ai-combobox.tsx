@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { Sparkles, Loader2, Check, ChevronsUpDown, Undo2 } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import React, { useState, useEffect, useRef } from "react";
+import { Sparkles, Loader2, Check, ChevronsUpDown, Undo2 } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 export interface AIComboboxOption {
   value: string;
@@ -18,23 +18,27 @@ export interface AIComboboxProps {
 }
 
 export const AICombobox = React.forwardRef<HTMLInputElement, AIComboboxProps>(
-  ({ options, value, onChange, placeholder, disabled, className, onAIClick }, ref) => {
+  (
+    { options, value, onChange, placeholder, disabled, className, onAIClick },
+    ref,
+  ) => {
     const [isActive, setIsActive] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [rotation, setRotation] = useState(0);
     const [comboboxOpen, setComboboxOpen] = useState(false);
-    const [searchValue, setSearchValue] = useState('');
+    const [searchValue, setSearchValue] = useState("");
     const [showUndo, setShowUndo] = useState(false);
-    const [previousValue, setPreviousValue] = useState<string>('');
+    const [previousValue, setPreviousValue] = useState<string>("");
     const animationRef = useRef<number | null>(null);
     const internalRef = useRef<HTMLInputElement | null>(null);
 
-    const gradientColors = '#BC82F3, #F5B9EA, #8D9FFF, #AA6EEE, #FF6778, #FFBA71, #C686FF, #BC82F3';
+    const gradientColors =
+      "#BC82F3, #F5B9EA, #8D9FFF, #AA6EEE, #FF6778, #FFBA71, #C686FF, #BC82F3";
 
     useEffect(() => {
       if (isActive) {
         const animate = () => {
-          setRotation(prev => (prev + 2) % 360);
+          setRotation((prev) => (prev + 2) % 360);
           animationRef.current = requestAnimationFrame(animate);
         };
         animationRef.current = requestAnimationFrame(animate);
@@ -56,7 +60,7 @@ export const AICombobox = React.forwardRef<HTMLInputElement, AIComboboxProps>(
       if (isLoading || disabled) return;
 
       // Store the current value before AI modification
-      setPreviousValue(value || '');
+      setPreviousValue(value || "");
       setShowUndo(false);
 
       setIsActive(true);
@@ -68,13 +72,9 @@ export const AICombobox = React.forwardRef<HTMLInputElement, AIComboboxProps>(
 
         if (onAIClick) {
           const result = await onAIClick();
-          if (typeof result === 'string') {
+          if (typeof result === "string") {
             generatedText = result;
           }
-        } else {
-          // Demo behavior - remove in production
-          await new Promise(resolve => setTimeout(resolve, 2000));
-          generatedText = "This is my super awesome AI generated text";
         }
 
         // Set the generated text if we got a result
@@ -97,48 +97,43 @@ export const AICombobox = React.forwardRef<HTMLInputElement, AIComboboxProps>(
 
     const handleRefCallback = (node: HTMLInputElement | null) => {
       internalRef.current = node;
-      if (typeof ref === 'function') {
+      if (typeof ref === "function") {
         ref(node);
       } else if (ref) {
         ref.current = node;
       }
     };
 
-    const filteredOptions = options.filter(option =>
-      option.label.toLowerCase().includes(searchValue.toLowerCase())
+    const filteredOptions = options.filter((option) =>
+      option.label.toLowerCase().includes(searchValue.toLowerCase()),
     );
 
-    const selectedOption = options.find(opt => opt.value === value);
-    const displayValue = comboboxOpen ? searchValue : (selectedOption?.label || '');
+    const selectedOption = options.find((opt) => opt.value === value);
+    const displayValue = comboboxOpen
+      ? searchValue
+      : selectedOption?.label || "";
 
     return (
       <div
         className="relative rounded-md overflow-visible"
         style={{
-          padding: '1px',
+          padding: "1px",
           background: isActive
             ? `conic-gradient(from ${rotation}deg, ${gradientColors})`
-            : 'transparent',
-          transition: 'padding 0.3s ease, background 0.3s ease',
+            : "transparent",
+          transition: "padding 0.3s ease, background 0.3s ease",
           boxShadow: isActive
-            ? `0 0 20px rgba(188, 130, 243, 0.6), 0 0 40px rgba(245, 185, 234, 0.5), 0 0 60px rgba(141, 159, 255, 0.4)`
-            : 'none',
+            ? `0 0 8px rgba(188, 130, 243, 0.35), 0 0 20px rgba(141, 159, 255, 0.15)`
+            : "none",
         }}
       >
-        {isActive && (
-          <div
-            className="absolute -inset-[12px] rounded-md pointer-events-none opacity-70 blur-3xl -z-10"
-            style={{
-              background: `conic-gradient(from ${rotation}deg, ${gradientColors})`,
-            }}
-          />
-        )}
-
         <div
           className={cn(
             "relative flex h-9 w-full items-center rounded-md bg-background px-3 py-1 shadow-xs transition-[color,box-shadow]",
-            isActive ? "border-transparent" : "border border-input focus-within:border-ring focus-within:ring-ring/50 focus-within:ring-[3px]",
-            disabled && "opacity-50 cursor-not-allowed pointer-events-none"
+            isActive
+              ? "border border-transparent"
+              : "border border-input focus-within:border-ring focus-within:ring-ring/50 focus-within:ring-[3px]",
+            disabled && "opacity-50 cursor-not-allowed pointer-events-none",
           )}
         >
           <input
@@ -150,19 +145,19 @@ export const AICombobox = React.forwardRef<HTMLInputElement, AIComboboxProps>(
               setComboboxOpen(true);
             }}
             onFocus={() => {
-              setSearchValue('');
+              setSearchValue("");
               setComboboxOpen(true);
             }}
             onBlur={() => {
               // Delay to allow click on option
               setTimeout(() => setComboboxOpen(false), 200);
-              setSearchValue('');
+              setSearchValue("");
             }}
             placeholder={placeholder}
             disabled={disabled}
             className={cn(
               "flex-1 bg-transparent text-base md:text-sm outline-none border-none placeholder:text-muted-foreground",
-              className
+              className,
             )}
           />
 
@@ -170,7 +165,7 @@ export const AICombobox = React.forwardRef<HTMLInputElement, AIComboboxProps>(
             type="button"
             onClick={() => setComboboxOpen(!comboboxOpen)}
             disabled={disabled}
-            className="flex items-center justify-center w-8 h-8 -mr-2 rounded-md flex-shrink-0 transition-all duration-200 hover:bg-accent text-gray-500 hover:text-gray-700"
+            className="flex items-center justify-center w-7 h-7 -mr-2 rounded-md flex-shrink-0 transition-all duration-200 hover:bg-accent text-gray-500 hover:text-gray-700"
           >
             <ChevronsUpDown className="w-4 h-4" />
           </button>
@@ -179,7 +174,7 @@ export const AICombobox = React.forwardRef<HTMLInputElement, AIComboboxProps>(
             <button
               type="button"
               onClick={handleUndo}
-              className="flex items-center justify-center w-8 h-8 -mr-2 rounded-md flex-shrink-0 transition-all duration-200 hover:bg-accent text-gray-500 hover:text-gray-700"
+              className="flex items-center justify-center w-7 h-7 -mr-2 rounded-md flex-shrink-0 transition-all duration-200 hover:bg-accent text-gray-500 hover:text-gray-700"
               title="Undo AI changes"
             >
               <Undo2 className="w-4 h-4" />
@@ -191,13 +186,14 @@ export const AICombobox = React.forwardRef<HTMLInputElement, AIComboboxProps>(
             onClick={handleAIClick}
             disabled={isLoading || disabled}
             className={`
-              flex items-center justify-center w-8 h-8 -mr-2 rounded-md flex-shrink-0
+              flex items-center justify-center w-7 h-7 -mr-2 rounded-md flex-shrink-0
               transition-all duration-200
-              ${isActive
-                ? 'bg-purple-100 text-purple-600'
-                : 'hover:bg-accent text-gray-500 hover:text-gray-700'
+              ${
+                isActive
+                  ? "bg-purple-100 text-purple-600"
+                  : "hover:bg-accent text-gray-500 hover:text-gray-700"
               }
-              ${isLoading || disabled ? 'cursor-not-allowed' : 'cursor-pointer'}
+              ${isLoading || disabled ? "cursor-not-allowed" : "cursor-pointer"}
             `}
           >
             {isLoading ? (
@@ -218,7 +214,7 @@ export const AICombobox = React.forwardRef<HTMLInputElement, AIComboboxProps>(
                     onChange(option.value);
                   }
                   setComboboxOpen(false);
-                  setSearchValue('');
+                  setSearchValue("");
                 }}
                 className="flex items-center justify-between px-3 py-2 cursor-pointer hover:bg-accent text-sm"
               >
@@ -232,7 +228,7 @@ export const AICombobox = React.forwardRef<HTMLInputElement, AIComboboxProps>(
         )}
       </div>
     );
-  }
+  },
 );
 
-AICombobox.displayName = 'AICombobox';
+AICombobox.displayName = "AICombobox";

@@ -1,27 +1,34 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { Sparkles, Loader2, Undo2 } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import React, { useState, useEffect, useRef } from "react";
+import { Sparkles, Loader2, Undo2 } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 export interface AITextareaProps extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {
   onAIClick?: () => void | Promise<void> | Promise<string>;
 }
 
-export const AITextarea = React.forwardRef<HTMLTextAreaElement, AITextareaProps>(
-  ({ className, placeholder, disabled, onAIClick, value, onChange, ...props }, ref) => {
+export const AITextarea = React.forwardRef<
+  HTMLTextAreaElement,
+  AITextareaProps
+>(
+  (
+    { className, placeholder, disabled, onAIClick, value, onChange, ...props },
+    ref,
+  ) => {
     const [isActive, setIsActive] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [rotation, setRotation] = useState(0);
     const [showUndo, setShowUndo] = useState(false);
-    const [previousValue, setPreviousValue] = useState<string>('');
+    const [previousValue, setPreviousValue] = useState<string>("");
     const animationRef = useRef<number | null>(null);
     const internalRef = useRef<HTMLTextAreaElement | null>(null);
 
-    const gradientColors = '#BC82F3, #F5B9EA, #8D9FFF, #AA6EEE, #FF6778, #FFBA71, #C686FF, #BC82F3';
+    const gradientColors =
+      "#BC82F3, #F5B9EA, #8D9FFF, #AA6EEE, #FF6778, #FFBA71, #C686FF, #BC82F3";
 
     useEffect(() => {
       if (isActive) {
         const animate = () => {
-          setRotation(prev => (prev + 2) % 360);
+          setRotation((prev) => (prev + 2) % 360);
           animationRef.current = requestAnimationFrame(animate);
         };
         animationRef.current = requestAnimationFrame(animate);
@@ -43,7 +50,7 @@ export const AITextarea = React.forwardRef<HTMLTextAreaElement, AITextareaProps>
       if (isLoading || disabled) return;
 
       // Store the current value before AI modification
-      const currentValue = internalRef.current?.value || '';
+      const currentValue = internalRef.current?.value || "";
       setPreviousValue(currentValue);
       setShowUndo(false);
 
@@ -55,13 +62,9 @@ export const AITextarea = React.forwardRef<HTMLTextAreaElement, AITextareaProps>
 
         if (onAIClick) {
           const result = await onAIClick();
-          if (typeof result === 'string') {
+          if (typeof result === "string") {
             generatedText = result;
           }
-        } else {
-          // Demo behavior - remove in production
-          await new Promise(resolve => setTimeout(resolve, 2000));
-          generatedText = "This is my super awesome AI generated text";
         }
 
         // Set the generated text to the textarea if we got a result
@@ -97,7 +100,7 @@ export const AITextarea = React.forwardRef<HTMLTextAreaElement, AITextareaProps>
 
     const handleRefCallback = (node: HTMLTextAreaElement | null) => {
       internalRef.current = node;
-      if (typeof ref === 'function') {
+      if (typeof ref === "function") {
         ref(node);
       } else if (ref) {
         ref.current = node;
@@ -108,30 +111,23 @@ export const AITextarea = React.forwardRef<HTMLTextAreaElement, AITextareaProps>
       <div
         className="relative rounded-md overflow-visible"
         style={{
-          padding: '1px',
+          padding: "1px",
           background: isActive
             ? `conic-gradient(from ${rotation}deg, ${gradientColors})`
-            : 'transparent',
-          transition: 'padding 0.3s ease, background 0.3s ease',
+            : "transparent",
+          transition: "padding 0.3s ease, background 0.3s ease",
           boxShadow: isActive
-            ? `0 0 20px rgba(188, 130, 243, 0.6), 0 0 40px rgba(245, 185, 234, 0.5), 0 0 60px rgba(141, 159, 255, 0.4)`
-            : 'none',
+            ? `0 0 8px rgba(188, 130, 243, 0.35), 0 0 20px rgba(141, 159, 255, 0.15)`
+            : "none",
         }}
       >
-        {isActive && (
-          <div
-            className="absolute -inset-[12px] rounded-md pointer-events-none opacity-70 blur-3xl -z-10"
-            style={{
-              background: `conic-gradient(from ${rotation}deg, ${gradientColors})`,
-            }}
-          />
-        )}
-
         <div
           className={cn(
             "relative rounded-md bg-background shadow-xs transition-[color,box-shadow]",
-            isActive ? "border-none" : "border border-input focus-within:border-ring focus-within:ring-ring/50 focus-within:ring-[3px]",
-            disabled && "opacity-50 cursor-not-allowed pointer-events-none"
+            isActive
+              ? "border border-transparent"
+              : "border border-input focus-within:border-ring focus-within:ring-ring/50 focus-within:ring-[3px]",
+            disabled && "opacity-50 cursor-not-allowed pointer-events-none",
           )}
         >
           <textarea
@@ -142,7 +138,7 @@ export const AITextarea = React.forwardRef<HTMLTextAreaElement, AITextareaProps>
             onChange={onChange}
             className={cn(
               "w-full min-h-[120px] bg-transparent text-base md:text-sm outline-none border-none px-3 py-2 placeholder:text-muted-foreground resize-none",
-              className
+              className,
             )}
             {...props}
           />
@@ -151,7 +147,7 @@ export const AITextarea = React.forwardRef<HTMLTextAreaElement, AITextareaProps>
               <button
                 type="button"
                 onClick={handleUndo}
-                className="flex items-center justify-center w-8 h-8 rounded-md flex-shrink-0 transition-all duration-200 hover:bg-accent text-gray-500 hover:text-gray-700"
+                className="flex items-center justify-center w-7 h-7 rounded-md flex-shrink-0 transition-all duration-200 hover:bg-accent text-gray-500 hover:text-gray-700"
                 title="Undo AI changes"
               >
                 <Undo2 className="w-4 h-4" />
@@ -162,13 +158,14 @@ export const AITextarea = React.forwardRef<HTMLTextAreaElement, AITextareaProps>
               onClick={handleAIClick}
               disabled={isLoading || disabled}
               className={`
-                flex items-center justify-center w-8 h-8 rounded-md flex-shrink-0
+                flex items-center justify-center w-7 h-7 rounded-md flex-shrink-0
                 transition-all duration-200
-                ${isActive
-                  ? 'bg-purple-100 text-purple-600'
-                  : 'hover:bg-accent text-gray-500 hover:text-gray-700'
+                ${
+                  isActive
+                    ? "bg-purple-100 text-purple-600"
+                    : "hover:bg-accent text-gray-500 hover:text-gray-700"
                 }
-                ${isLoading || disabled ? 'cursor-not-allowed' : 'cursor-pointer'}
+                ${isLoading || disabled ? "cursor-not-allowed" : "cursor-pointer"}
               `}
             >
               {isLoading ? (
@@ -181,7 +178,7 @@ export const AITextarea = React.forwardRef<HTMLTextAreaElement, AITextareaProps>
         </div>
       </div>
     );
-  }
+  },
 );
 
-AITextarea.displayName = 'AITextarea';
+AITextarea.displayName = "AITextarea";

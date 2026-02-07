@@ -1,0 +1,55 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry.json",
+  "name": "shadcn-ai-input-components",
+  "homepage": "https://github.com/chrisboulton/shadcn-components-ai-inputs",
+  "items": [
+    {
+      "name": "ai-combobox",
+      "type": "registry:ui",
+      "title": "AICombobox",
+      "description": "A searchable combobox with an AI generation button, animated gradient border, loading state, and undo.",
+      "dependencies": ["lucide-react", "clsx", "tailwind-merge"],
+      "files": [
+        { "path": "src/components/ui/ai-combobox.tsx", "type": "registry:ui" },
+        { "path": "src/lib/utils.ts", "type": "registry:lib" }
+      ]
+    },
+    {
+      "name": "ai-textarea",
+      "type": "registry:ui",
+      "title": "AITextarea",
+      "description": "A multi-line textarea with an AI generation button, animated gradient border, loading state, and undo.",
+      "dependencies": ["lucide-react", "clsx", "tailwind-merge"],
+      "files": [
+        { "path": "src/components/ui/ai-textarea.tsx", "type": "registry:ui" },
+        { "path": "src/lib/utils.ts", "type": "registry:lib" }
+      ]
+    },
+    {
+      "name": "ai-textbox",
+      "type": "registry:ui",
+      "title": "AITextbox",
+      "description": "A single-line text input with an AI generation button (with optional dropdown), animated gradient border, loading state, and undo.",
+      "dependencies": ["lucide-react", "clsx", "tailwind-merge"],
+      "registryDependencies": ["dropdown-menu"],
+      "files": [
+        { "path": "src/components/ui/ai-textbox.tsx", "type": "registry:ui" },
+        { "path": "src/lib/utils.ts", "type": "registry:lib" }
+      ]
+    },
+    {
+      "name": "ai-inputs",
+      "type": "registry:block",
+      "title": "AI Inputs",
+      "description": "All three AI-enhanced input components: AITextbox, AITextarea, and AICombobox.",
+      "dependencies": ["lucide-react", "clsx", "tailwind-merge"],
+      "registryDependencies": ["dropdown-menu"],
+      "files": [
+        { "path": "src/components/ui/ai-textbox.tsx", "type": "registry:ui" },
+        { "path": "src/components/ui/ai-textarea.tsx", "type": "registry:ui" },
+        { "path": "src/components/ui/ai-combobox.tsx", "type": "registry:ui" },
+        { "path": "src/lib/utils.ts", "type": "registry:lib" }
+      ]
+    }
+  ]
+}

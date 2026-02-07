@@ -1,0 +1,3 @@
+name = "shadcn-ai-input-components"
+compatibility_date = "2025-01-01"
+pages_build_output_dir = "examples/vite/dist"
